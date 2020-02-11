@@ -49,13 +49,13 @@ public class ScriptParser {
     }
 
     protected int locatePhysicalIndex(String input) {
-        Pattern p = Pattern.compile("console\\['log'\\]\\(_0x[a-f0-9]+\\('0x([a-f0-9]+)'\\)\\);", Pattern.CASE_INSENSITIVE);
+        Pattern p = Pattern.compile("console\\[_0x[a-f0-9]+\\('0x[a-f0-9]+'\\)\\]\\(_0x[a-f0-9]+\\('0x([a-f0-9]+)'\\)\\);", Pattern.CASE_INSENSITIVE);
         String lastMatch = StringUtils.getLastMatch(input, p, 1);
         return Integer.parseInt(lastMatch, 16);
     }
 
     protected int calculateOffset(String input) {
-        int expectedIndex = wordList.indexOf("Not Allowed!!!");
+        int expectedIndex = wordList.indexOf("Not\\x20Allowed!!!");
         return Math.abs(expectedIndex - locatePhysicalIndex(input));
     }
 
@@ -90,7 +90,7 @@ public class ScriptParser {
     }
 
     private static String replaceStrings(String input, List<String> words, int offset) {
-        Pattern pattern = Pattern.compile("_0x1e24\\('0x(?<hex>[a-f0-9]+)'\\)", Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile("_0x2d2a\\('0x(?<hex>[a-f0-9]+)'\\)", Pattern.CASE_INSENSITIVE);
         return StringUtils.replaceAll(input, pattern, (matcher) -> {
             String hexMatch = matcher.group("hex");
             int stringIndex = Integer.parseInt(hexMatch, 16);
