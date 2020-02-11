@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ScriptParser {
     protected String outputFilename; // required
@@ -55,13 +56,22 @@ public class ScriptParser {
     }
 
     protected int calculateOffset(String input) {
-        int expectedIndex = wordList.indexOf("Not\\x20Allowed!!!");
+        int expectedIndex = wordList.indexOf("Not Allowed!!!");
         return Math.abs(expectedIndex - locatePhysicalIndex(input));
     }
 
     protected List<String> extractWords(String input) {
+        Pattern pattern = Pattern.compile("\\\\x(\\d{2})", Pattern.CASE_INSENSITIVE);
         String str = input.substring(input.indexOf("['") + 1, input.indexOf("'];")).replaceAll("\\s+", " ");
-        return Arrays.asList(str.split("'\\s*,\\s*'"));
+        return Arrays.asList(str.split("'\\s*,\\s*'")).stream().map(text -> {
+            return StringUtils.replaceAll(text, pattern, (matcher) -> {
+                StringBuffer buff = new StringBuffer(Character.toString((char) Integer.parseInt(matcher.group(1), 16)));
+                if (buff.charAt(0) == '"') {
+                    buff.insert(0, "\\");
+                }
+                return buff.toString();
+            });
+        }).collect(Collectors.toList());
     }
 
     private static String replaceHexValues(String input) {
