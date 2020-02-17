@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 public class ScriptParser {
     protected String outputFilename; // required
+    protected String strMapFn;       // required
     protected int linesToSkip;       // optional (default = 0)
     private String originalText;     // internal
     private List<String> wordList;   // internal
@@ -46,7 +47,7 @@ public class ScriptParser {
     }
 
     private String transform() {
-        return StringUtils.substringAfter(replaceHexValues(squareToDotNotation(replaceStrings(originalText, wordList, wordListOffset), 2)), '\n', getLinesToSkip());
+        return StringUtils.substringAfter(replaceHexValues(squareToDotNotation(replaceStrings(originalText, wordList, wordListOffset, strMapFn), 2)), '\n', getLinesToSkip());
     }
 
     protected int locatePhysicalIndex(String input) {
@@ -99,8 +100,8 @@ public class ScriptParser {
         return input;
     }
 
-    private static String replaceStrings(String input, List<String> words, int offset) {
-        Pattern pattern = Pattern.compile("_0x2d2a\\('0x(?<hex>[a-f0-9]+)'\\)", Pattern.CASE_INSENSITIVE);
+    private static String replaceStrings(String input, List<String> words, int offset, String strMapFn) {
+        Pattern pattern = Pattern.compile(strMapFn + "\\('0x(?<hex>[a-f0-9]+)'\\)", Pattern.CASE_INSENSITIVE);
         return StringUtils.replaceAll(input, pattern, (matcher) -> {
             String hexMatch = matcher.group("hex");
             int stringIndex = Integer.parseInt(hexMatch, 16);
@@ -112,10 +113,12 @@ public class ScriptParser {
 
     public static class ScriptParserBuilder<T extends ScriptParser> {
         private String outputFilename; // required
+        private String strMapFn;       // required
         private int linesToSkip;       // optional (default = 0)
 
-        public ScriptParserBuilder(String outputFilename) {
+        public ScriptParserBuilder(String outputFilename, String strMapFn) {
             this.outputFilename = outputFilename;
+            this.strMapFn = strMapFn;
             this.linesToSkip = 0;
         }
 
@@ -130,6 +133,7 @@ public class ScriptParser {
             T parser = constructor.newInstance();
 
             parser.outputFilename = this.outputFilename;
+            parser.strMapFn = this.strMapFn;
             parser.linesToSkip = this.linesToSkip;
 
             return parser;

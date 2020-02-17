@@ -6,6 +6,7 @@ import java.io.IOException;
 
 public class Runner implements Runnable {
     private static final String INPUT_FILENAME = "script-20200209.txt";
+    private static final String STR_MAP_FN = "_0x2d2a";
     private static final String OUTPUT_FILENAME = "out/script.js";
     private static final int LINES_TO_SKIP = 14;
 
@@ -19,7 +20,7 @@ public class Runner implements Runnable {
         ScriptParser parser = null;
 
         try {
-            parser = new ScriptParser.ScriptParserBuilder(OUTPUT_FILENAME)
+            parser = new ScriptParser.ScriptParserBuilder(OUTPUT_FILENAME, STR_MAP_FN)
                     .withLinesToSkip(LINES_TO_SKIP)
                     .build(ScriptParser.class);
         } catch (Exception e) {
