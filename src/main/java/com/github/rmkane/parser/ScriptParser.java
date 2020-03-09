@@ -51,14 +51,16 @@ public class ScriptParser {
     }
 
     protected int locatePhysicalIndex(String input) {
-        Pattern p = Pattern.compile("console\\[_0x[a-f0-9]+\\('0x[a-f0-9]+'\\)\\]\\(_0x[a-f0-9]+\\('0x([a-f0-9]+)'\\)\\);", Pattern.CASE_INSENSITIVE);
+        // MATCH: 0x3df ; IN: const _0x2fc6b6 = window[_0x5e6c('0x3df')]['hostname'];
+        Pattern p = Pattern.compile("const _0x[a-f0-9]+ = window\\[_0x[a-f0-9]+\\('0x([a-f0-9]+)'\\)\\]\\['hostname'\\];", Pattern.CASE_INSENSITIVE);
         String lastMatch = StringUtils.getLastMatch(input, p, 1);
         return Integer.parseInt(lastMatch, 16);
     }
 
     protected int calculateOffset(String input) {
-        int expectedIndex = wordList.indexOf("Not Allowed!!!");
-        return Math.abs(expectedIndex - locatePhysicalIndex(input));
+        int expectedIndex = wordList.indexOf("location");
+        int physicalIndex = locatePhysicalIndex(input);
+        return physicalIndex - expectedIndex;
     }
 
     protected List<String> extractWords(String input) {
@@ -105,7 +107,7 @@ public class ScriptParser {
         return StringUtils.replaceAll(input, pattern, (matcher) -> {
             String hexMatch = matcher.group("hex");
             int stringIndex = Integer.parseInt(hexMatch, 16);
-            int finalIndex = (stringIndex + offset) % words.size();
+            int finalIndex = (stringIndex - offset + words.size()) % words.size();
             String lookup = words.get(finalIndex);
             return "\"" + lookup + "\"";
         });
